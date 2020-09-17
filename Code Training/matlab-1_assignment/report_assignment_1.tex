@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[12pt]{article}
     \usepackage{amsthm,amsmath,amssymb}
     \usepackage{amsfonts}
     \usepackage{mathrsfs}
@@ -14,6 +14,7 @@
     \usepackage{placeins}
     \usepackage{subfigure}
     \usepackage{bm}
+    \usepackage[colorlinks,linkcolor=blue]{hyperref}
 
 \lstset{
     basicstyle=\fontspec{Consolas},
@@ -155,6 +156,9 @@ The minimum of the error function is obtained with the derivative with respect t
 \begin{equation}
     T_i=((\tilde{P_i}^T\tilde{P}_i)^{-1}\tilde{P_i}^T\tilde{Q}_i)^T
 \end{equation}
+\subsubsection*{complexity analysis}
+With $n$ the number of control points, we need $O(n)$ time to get matrix T. And for every pixels in the image, we need $O(n)$ time to compute the weight and get the result coordinate.So the complexity is $O(nN+n^2)$ where N is the number of pixels.
+
 
 \subsection{Radial Basis Functions Methods}
 Another popular approach to scattered data interpolation is to construct the interpolation function as a linear combination of basis functions, then determine the coefficients of the basis functions,
@@ -181,11 +185,62 @@ So the resulting mapping function is then
     \mathbf{f}(\mathbf{p})=\sum_{i=1}^n\bm{\alpha}_i(d(\mathbf{p},\mathbf{p}_i)^2+r_i^2)^{\mu/2}+\mathbf{p}
 \end{equation}
 where $\bm{\alpha}_i$ can be calculated with $\mathbf{f}(\mathbf{p}_i)=\mathbf{q}_i$ by solving 2N linear equations.
+\subsubsection*{complexity analysis}
+For every pixel, we need $O(n)$ time to compute the result of radial basis functions. Besides, we need another $O(n^3)$ time to get the coefficients $\alpha_i$. So it gives the complexity of $O(nN+n^3)$.
 
 \section{Results}
+\begin{figure}
+    \subfigure[IDW]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/idw3.pdf}
+    }
+    \subfigure[RBF]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/rbf3.pdf}
+    }
+    %    \caption{n=9}
+    %\end{figure}
+    %\begin{figure}[htb]
+    \subfigure[IDW]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/idw1.pdf}
+    }
+    \subfigure[RBF]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/rbf1.pdf}
+    }
+    \subfigure[IDW]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/idw2.pdf}
+    }
+    \subfigure[RBF]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/rbf2.pdf}
+    }
+    \subfigure[IDW]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/idw5.pdf}
+    }
+    \subfigure[RBF]{
+        \includegraphics[width=0.5\textwidth]{ResultImage/rbf5.pdf}
+    }
+\end{figure}
+
+\newpage
+
+\section{Performance Comparisons}
+The table below shows the runtime of two algorithm in a $256\times256$-pixel image with different control points numbers in our test.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|ccccc|}
+        \hline
+        n      & 4        & 8        & 16       & 24       & 32       \\
+        \hline
+        IDW(s) & 0.947608 & 1.506009 & 3.044657 & 3.725757 & 4.742689 \\
+        RBF(s) & 0.297725 & 0.357402 & 0.536027 & 0.549384 & 0.667023 \\
+        \hline
+    \end{tabular}
+\end{table}
+we can see in the same image with the same control points, RBF method spent less time. And with the same number of control points, RBF method leads to a more precise result(see figure(a) and(b)).
+
+Also, in the image test, we can see some disadvantages of IDW and RBF. One of them is that we cannot mapping the original image to every pixel of the result image, which causes the black hole or gap in the result image. The other disadvantage is that in some extreme situation, the IDW and RBF will cause the foldover in the result image(see figure (g) and (h)).
 
 
-
-
+\appendix
+\section{Code}
+All the code of this assignment can be downloaded from \url{https://github.com/mathendy/MS-USTC/tree/master/Code%20Training/matlab-1_assignment}.
 
 \end{document}
