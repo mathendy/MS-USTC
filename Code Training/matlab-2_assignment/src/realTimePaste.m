@@ -1,13 +1,17 @@
-function imret = blendImagePoisson(im1, im2, roi, targetPosition)
-
-% input: im1 (background), im2 (foreground), roi (in im2), targetPosition (in im1)
+function realTimePaste(p)
+im1 = evalin('base', 'im1');
+im2 = evalin('base', 'im2');
+hpolys = evalin('base', 'hpolys');
+himg = evalin('base', 'himg');
 [bgHeight, bgWidth, dim] = size(im1);
-deltaPosition = targetPosition(1,:)-roi(1,:);
-hp2=evalin('base','hpolys(2)');
+roi= hpolys(1).getPosition();
+deltaPosition = ceil(p(1,:)-roi(1,:));
+
+num=zeros(bgHeight,bgWidth);
+A=evalin('base','A');
 numSrc=evalin('base','numSrc');
 [n,~]=size(numSrc);
-A=sparse(n,n);
-num=zeros(bgHeight,bgWidth);
+
 for i = 1:n
     num(numSrc(i,1)+deltaPosition(2),numSrc(i,2)+deltaPosition(1))=i;
 end
@@ -19,15 +23,11 @@ deltaNeighbor = [0,1;0,-1;1,0;-1,0];
 for i = 1:bgHeight
     for j = 1:bgWidth
         if num(i,j)~=0
-            Np=0;
             for k = 1:4
                 h = i+deltaNeighbor(k,1);
                 w = j+deltaNeighbor(k,2);
                 if h>=1&&h<=bgHeight&&w>=1&&w<=bgWidth
-                    Np=Np+1;
-                    if num(h,w)~=0
-                        A(num(i,j),num(h,w)) = -1;
-                    else
+                    if num(h,w)==0
                         for l = 1:dim
                             bgF(num(i,j),l)=bgF(num(i,j),l)+double(im1(h,w,l));
                         end
@@ -43,15 +43,14 @@ for i = 1:bgHeight
                             V(num(i,j),l)=V(num(i,j),l)+tmpg;
                         end
                     end
-                end     
+                end
             end
-            A(num(i,j),num(i,j)) = Np;
         end
     end
 end
-dA=decomposition(A,'chol');
-assignin('base','A',dA);
-Fp=dA\(bgF+V);
+tic
+Fp=A\(bgF+V);
+toc
 imret=im1;
 for i = 1:bgHeight
     for j = 1:bgWidth
@@ -60,9 +59,6 @@ for i = 1:bgHeight
         end
     end
 end
-addNewPositionCallback(hp2,@(p) realTimePaste(p));
-
-
-
-%% TODO: compute blended image
+set(himg, 'CData', imret);
+end
 
